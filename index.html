@@ -42,11 +42,18 @@ input,select,textarea{font-family:inherit;color:inherit;}
   display:flex;flex-direction:column;
   background:var(--bg-1);border-bottom:1px solid var(--line);
 }
+/* Wrap onto a second line instead of scrolling sideways when the window is
+   narrow (small Chromebooks, or a browser zoomed in): Chrome OS hides
+   scrollbars until you touch them, so a sideways-scrolling bar looked like
+   buttons had simply vanished off the right-hand edge. */
 .topbar-row{
-  display:flex;align-items:center;gap:8px;height:44px;min-height:44px;
-  padding:0 12px;flex-wrap:nowrap;overflow-x:auto;
+  display:flex;align-items:center;gap:8px;row-gap:4px;min-height:44px;
+  padding:3px 12px;flex-wrap:wrap;
 }
 .topbar-row + .topbar-row{border-top:1px solid var(--line);}
+@media (max-width: 1000px){
+  .topsep{display:none;}
+}
 #brand{
   font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;
   display:flex;align-items:center;gap:8px;padding-right:10px;
@@ -132,11 +139,16 @@ input,select,textarea{font-family:inherit;color:inherit;}
 }
 
 /* ---------- RIGHT PANEL ---------- */
+/* The whole right-hand column scrolls vertically when the window is short
+   (e.g. a 768px-tall Chromebook screen minus the browser's own toolbars);
+   previously the lower part (rotation/size fields, 複製/削除 buttons, the
+   object list) was pushed off-screen with no way to reach it. */
 #rightpanel{
   width:240px;min-width:240px;background:var(--bg-1);border-left:1px solid var(--line);
   display:flex;flex-direction:column;min-height:0;
+  overflow-y:auto;overflow-x:hidden;
 }
-.panel-section{border-bottom:1px solid var(--line);padding:12px 14px;}
+.panel-section{border-bottom:1px solid var(--line);padding:12px 14px;flex:none;}
 .panel-title{font-size:11px;font-weight:600;color:var(--text-2);letter-spacing:0.3px;margin-bottom:10px;}
 .empty-hint{color:var(--text-2);font-size:12px;line-height:1.7;padding:6px 0;}
 
@@ -165,6 +177,8 @@ input,select,textarea{font-family:inherit;color:inherit;}
   color:var(--text-1);padding:7px 4px;cursor:pointer;font-size:11px;
 }
 .row-btns button:hover{background:var(--bg-3);color:var(--text-0);}
+.row-btns button.iconbtn{display:flex;align-items:center;justify-content:center;gap:5px;}
+.row-btns button.iconbtn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;flex:none;}
 .togglebtn2{
   display:flex;align-items:center;justify-content:space-between;background:var(--bg-2);
   border:1px solid var(--line);border-radius:var(--radius);padding:6px 9px;margin-bottom:8px;
@@ -176,7 +190,9 @@ input,select,textarea{font-family:inherit;color:inherit;}
 .togglebtn2.on .sw::after{background:var(--accent);transform:translateX(12px);}
 .hint-line{font-size:11px;color:var(--text-2);margin-bottom:10px;line-height:1.5;}
 
-#layers-section{flex:1;display:flex;flex-direction:column;min-height:0;padding-bottom:0;}
+/* grows to fill spare room, but never shrinks below ~200px (so it can't be
+   squashed to nothing); the panel itself scrolls if there isn't enough room */
+#layers-section{flex:1 0 200px;display:flex;flex-direction:column;min-height:200px;padding-bottom:0;}
 #layer-list{flex:1;overflow-y:auto;margin:0 -14px;padding:0 8px;list-style:none;}
 .layer-row{
   display:flex;align-items:center;gap:7px;padding:6px 6px;border-radius:var(--radius);cursor:pointer;
@@ -207,6 +223,8 @@ input,select,textarea{font-family:inherit;color:inherit;}
   position:absolute;top:60px;left:60px;width:280px;background:var(--bg-1);
   border:1px solid var(--line);border-radius:6px;box-shadow:0 12px 30px rgba(0,0,0,.5);
   z-index:60;padding:14px;
+  /* scroll inside the panel when the window is shorter than the panel */
+  max-height:calc(100vh - 80px);overflow-y:auto;
 }
 #preset-panel h3{margin:0 0 4px;font-size:13px;font-weight:600;color:var(--text-0);}
 #preset-panel .close-x{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--text-2);cursor:pointer;font-size:16px;line-height:1;}
@@ -231,17 +249,17 @@ input,select,textarea{font-family:inherit;color:inherit;}
 .preset-btn.create:hover{background:#ff8c56;}
 
 /* ---------- RIGHTS / COPYRIGHT INFO PANEL ---------- */
-#rights-panel, #about-panel{
+#rights-panel, #about-panel, #export-panel{
   position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
-  width:min(560px, 90vw);max-height:82vh;overflow-y:auto;
+  width:min(560px, 90vw);max-height:90vh;overflow-y:auto;
   background:var(--bg-1);border:1px solid var(--line);border-radius:8px;
   box-shadow:0 20px 50px rgba(0,0,0,.6);z-index:81;padding:22px 24px;
 }
-#rights-overlay, #about-overlay{
+#rights-overlay, #about-overlay, #export-overlay{
   position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:80;
 }
-#rights-panel h3, #about-panel h3{margin:0 0 10px;font-size:15px;font-weight:700;color:var(--text-0);font-family:'Space Grotesk',sans-serif;}
-#rights-panel .close-x, #about-panel .close-x{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--text-2);cursor:pointer;font-size:20px;line-height:1;}
+#rights-panel h3, #about-panel h3, #export-panel h3{margin:0 0 10px;font-size:15px;font-weight:700;color:var(--text-0);font-family:'Space Grotesk',sans-serif;}
+#rights-panel .close-x, #about-panel .close-x, #export-panel .close-x{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--text-2);cursor:pointer;font-size:20px;line-height:1;}
 .rights-lead{font-size:12.5px;color:var(--text-1);line-height:1.7;margin:0 0 16px;}
 .rights-group{border-top:1px solid var(--line);padding-top:12px;margin-top:12px;}
 .rights-group:first-of-type{border-top:none;padding-top:0;margin-top:0;}
@@ -278,6 +296,9 @@ input,select,textarea{font-family:inherit;color:inherit;}
         <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2"><path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 000 12h2"/></svg>
         進む
       </button>
+      <button class="topbtn" id="btn-copy" title="選択した図形をコピー (Ctrl+C)">コピー</button>
+      <button class="topbtn" id="btn-cut" title="選択した図形を切り取り (Ctrl+X)">切り取り</button>
+      <button class="topbtn" id="btn-paste" title="コピーした図形を貼り付け (Ctrl+V)">貼り付け</button>
 
       <div class="topsep"></div>
 
@@ -414,6 +435,26 @@ input,select,textarea{font-family:inherit;color:inherit;}
             <div class="field"><label>回転 (°)</label><input type="number" id="prop-rotation" step="1"></div>
           </div>
 
+          <div id="block-transform" style="margin-bottom:10px;">
+            <div class="subhint">回転・反転(複数選択時は全体の中心で)</div>
+            <div class="row-btns">
+              <button class="iconbtn" id="btn-rot-left" title="左(反時計回り)に90°回す">
+                <svg viewBox="0 0 24 24"><path d="M3 4v6h6"/><path d="M4.5 15a8 8 0 1 0 1.9-8.3L3 10"/></svg>左に90°
+              </button>
+              <button class="iconbtn" id="btn-rot-right" title="右(時計回り)に90°回す">
+                <svg viewBox="0 0 24 24"><path d="M21 4v6h-6"/><path d="M19.5 15a8 8 0 1 1-1.9-8.3L21 10"/></svg>右に90°
+              </button>
+            </div>
+            <div class="row-btns">
+              <button class="iconbtn" id="btn-flip-h" title="左右をひっくり返す(鏡に映したように反転)">
+                <svg viewBox="0 0 24 24"><path d="M12 3v18" stroke-dasharray="2 2"/><path d="M9 7L3 17h6z"/><path d="M15 7l6 10h-6z"/></svg>左右反転
+              </button>
+              <button class="iconbtn" id="btn-flip-v" title="上下をひっくり返す(鏡に映したように反転)">
+                <svg viewBox="0 0 24 24"><path d="M3 12h18" stroke-dasharray="2 2"/><path d="M7 9L17 3v6z"/><path d="M7 15l10 6v-6z"/></svg>上下反転
+              </button>
+            </div>
+          </div>
+
           <div id="block-dims" class="grid2">
             <div class="field"><label>幅 W (mm)</label><input type="number" id="prop-w" step="0.1"></div>
             <div class="field"><label>高さ H (mm)</label><input type="number" id="prop-h" step="0.1"></div>
@@ -545,6 +586,11 @@ input,select,textarea{font-family:inherit;color:inherit;}
     <h3>権利関係について(このソフトウェアの権利)</h3>
     <p class="rights-lead">このソフトウェア「レーザーカットデザイナー」の著作権は、作者である<b>三原博幸</b>に帰属します。以下の条件のもとで、どなたでも自由にお使いいただけます。</p>
 
+    <div class="rights-group" style="border:1px solid var(--border-2, #667);border-radius:8px;padding:10px 12px;">
+      <div class="rights-group-title">クリエイティブ・コモンズ ライセンス: CC BY-NC 4.0(表示－非営利)</div>
+      <p>このソフトウェア・使い方ガイド・サンプルデータは、<b>クリエイティブ・コモンズ 表示－非営利 4.0 国際(CC BY-NC 4.0)</b>で提供しています。作者名(三原博幸)と作品名を表示すれば、非営利目的に限り、コピー・配布・改変ができます(改変した場合は、改変したことを明記してください)。<br>詳細: <a href="https://creativecommons.org/licenses/by-nc/4.0/deed.ja" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline;">https://creativecommons.org/licenses/by-nc/4.0/deed.ja</a></p>
+    </div>
+
     <div class="rights-group">
       <div class="rights-group-title">① 著作権者</div>
       <p>三原博幸(みはら ひろゆき)</p>
@@ -653,7 +699,7 @@ input,select,textarea{font-family:inherit;color:inherit;}
    whenever a new copy of this file is published/redistributed, so old and
    new copies can be told apart at a glance.
 ===================================================================== */
-const APP_VERSION = '1.02';
+const APP_VERSION = '1.04';
 
 /* =====================================================================
    STATE
@@ -984,9 +1030,24 @@ function localGeometryAttrs(o){
   return {tag:'g', attrs:{}};
 }
 
-function transformString(o){
+/* Position + rotation only (NO mirror flip). Used for the selection box, the
+   resize/rotate handles and the dimension lines: the box is symmetric about
+   its own centre so it looks identical flipped or not, and the handle-drag
+   maths (doResize etc.) works in this un-flipped frame. */
+function frameTransformString(o){
   const cx = o.w/2, cy = o.h/2;
   return `translate(${o.x} ${o.y}) rotate(${o.rotation||0} ${cx} ${cy})`;
+}
+/* Full transform used to DRAW the object and to EXPORT it: the frame above,
+   plus an optional left-right / up-down mirror about the object's own centre
+   (o.flipX / o.flipY — undefined on older saved data, which means "no flip"). */
+function transformString(o){
+  let t = frameTransformString(o);
+  if(o.flipX || o.flipY){
+    const cx = o.w/2, cy = o.h/2;
+    t += ` translate(${cx} ${cy}) scale(${o.flipX ? -1 : 1} ${o.flipY ? -1 : 1}) translate(${-cx} ${-cy})`;
+  }
+  return t;
 }
 
 /* ---- parametric preset geometry builders (all operate in LOCAL 0..w,0..h space) ---- */
@@ -1394,7 +1455,7 @@ function renderOverlay(){
 
   sel.forEach(o=>{
     const g = document.createElementNS(svgNS,'g');
-    g.setAttribute('transform', transformString(o));
+    g.setAttribute('transform', frameTransformString(o));
     const box = document.createElementNS(svgNS,'rect');
     box.setAttribute('x', -pad); box.setAttribute('y', -pad);
     box.setAttribute('width', o.w+pad*2); box.setAttribute('height', o.h+pad*2);
@@ -1409,7 +1470,7 @@ function renderOverlay(){
   if(sel.length === 1){
     const o = sel[0];
     const g = document.createElementNS(svgNS,'g');
-    g.setAttribute('transform', transformString(o));
+    g.setAttribute('transform', frameTransformString(o));
 
     if(o.type !== 'text'){
       HANDLE_DEFS.forEach(h=>{
@@ -1463,7 +1524,7 @@ function renderOverlay(){
 function drawDimensions(o){
   const off = 7, tick = 2.5/state.zoom, fs = 16/state.zoom, arrowStroke = 1.6/state.zoom;
   const g = document.createElementNS(svgNS,'g');
-  g.setAttribute('transform', transformString(o));
+  g.setAttribute('transform', frameTransformString(o));
 
   // width dimension (below shape)
   const wy = o.h + off;
@@ -1603,6 +1664,7 @@ function renderProps(){
   $('#toggle-text-fill').classList.toggle('hidden', !isText);
   $('#block-strokewidth').classList.toggle('hidden', isGuide);
   $('#block-rotation').classList.toggle('hidden', isGuide);
+  $('#block-transform').classList.toggle('hidden', isGuide);
   $('#block-dims').classList.toggle('hidden', isText);
   $('#block-rect').classList.toggle('hidden', !isRect);
   $('#block-arc').classList.toggle('hidden', !isArc);
@@ -1726,6 +1788,108 @@ function duplicateSelection(){
   state.selectedIds = copies.map(c=>c.id);
   renderAll(); renderProps(); pushHistory();
 }
+/* ---------- rotate / flip the selection ----------
+   Works on one object or several at once. With several, everything turns /
+   mirrors around the CENTRE OF THE WHOLE SELECTION (like turning a sheet of
+   parts over together), not each part around its own centre. */
+function normAngle(a){ return round2(((a % 360) + 360) % 360); }
+function transformableSelection(){ return selectedObjects().filter(o=>!o.locked); }
+function selectionPivot(objs){
+  const b = groupBBoxWorld(objs);
+  return {x:(b.x1+b.x2)/2, y:(b.y1+b.y2)/2};
+}
+function rotateSelectionBy(deg){
+  const objs = transformableSelection();
+  if(objs.length === 0) return;
+  const P = selectionPivot(objs);
+  objs.forEach(o=>{
+    // an object's own centre stays put when it spins about itself, so its
+    // world-space centre is simply (x + w/2, y + h/2)
+    const d = rotPoint(o.x + o.w/2 - P.x, o.y + o.h/2 - P.y, deg);
+    o.x = round2(P.x + d.x - o.w/2);
+    o.y = round2(P.y + d.y - o.h/2);
+    o.rotation = normAngle((o.rotation||0) + deg);
+  });
+  renderAll(); renderProps(); pushHistory();
+}
+function flipSelection(axis){ // 'h' = left<->right, 'v' = top<->bottom
+  const objs = transformableSelection();
+  if(objs.length === 0) return;
+  const P = selectionPivot(objs);
+  objs.forEach(o=>{
+    if(axis === 'h'){
+      o.x = round2(2*P.x - (o.x + o.w/2) - o.w/2);
+      o.flipX = !o.flipX;
+    } else {
+      o.y = round2(2*P.y - (o.y + o.h/2) - o.h/2);
+      o.flipY = !o.flipY;
+    }
+    // mirroring a turned shape also reverses the direction it is turned
+    o.rotation = normAngle(-(o.rotation||0));
+  });
+  renderAll(); renderProps(); pushHistory();
+}
+$('#btn-rot-left').addEventListener('click', ()=> rotateSelectionBy(-90));
+$('#btn-rot-right').addEventListener('click', ()=> rotateSelectionBy(90));
+$('#btn-flip-h').addEventListener('click', ()=> flipSelection('h'));
+$('#btn-flip-v').addEventListener('click', ()=> flipSelection('v'));
+
+/* ---------- copy / cut / paste (kept inside the app) ----------
+   The copied parts are held in memory here (not in `state`), so copying
+   doesn't add undo steps or get autosaved. Each paste lands a little further
+   down-and-right of the last one so copies never hide each other. */
+let clipboard = [];
+let pasteCount = 0;
+function copySelection(){
+  const sel = selectedObjects();
+  if(sel.length === 0) return false;
+  clipboard = sel.map(o=> JSON.parse(JSON.stringify(o)));
+  pasteCount = 0;
+  return true;
+}
+function cutSelection(){
+  if(!copySelection()) return false;
+  pasteCount = -1; // first paste goes back exactly where the cut parts were
+  deleteObjects(state.selectedIds.slice());
+  return true;
+}
+function pasteClipboard(){
+  if(clipboard.length === 0) return false;
+  pasteCount++;
+  const off = 5 * pasteCount;
+  const groupIdMap = new Map();
+  const copies = clipboard.map(src=>{
+    const c = JSON.parse(JSON.stringify(src));
+    c.id = uid();
+    c.x = round2(c.x + off); c.y = round2(c.y + off);
+    if(c.groupId){
+      if(!groupIdMap.has(c.groupId)) groupIdMap.set(c.groupId, 'grp'+(state.nextId++));
+      c.groupId = groupIdMap.get(c.groupId);
+    }
+    return c;
+  });
+  state.objects.push(...copies);
+  state.selectedIds = copies.map(c=>c.id);
+  renderAll(); renderProps(); pushHistory();
+  return true;
+}
+function flashButtonLabel(btn, text){
+  const orig = btn.dataset.label || btn.textContent;
+  btn.dataset.label = orig;
+  btn.textContent = text;
+  clearTimeout(btn._flashT);
+  btn._flashT = setTimeout(()=>{ btn.textContent = orig; }, 1300);
+}
+$('#btn-copy').addEventListener('click', ()=>{
+  flashButtonLabel($('#btn-copy'), copySelection() ? 'コピーしました' : '先に図形を選択');
+});
+$('#btn-cut').addEventListener('click', ()=>{
+  if(!cutSelection()) flashButtonLabel($('#btn-cut'), '先に図形を選択');
+});
+$('#btn-paste').addEventListener('click', ()=>{
+  if(!pasteClipboard()) flashButtonLabel($('#btn-paste'), 'コピーした図形なし');
+});
+
 function deleteObjects(ids){
   const idset = new Set(ids);
   state.objects = state.objects.filter(o=>!idset.has(o.id));
@@ -1862,8 +2026,7 @@ function onPointerDown(e){
     const o = getObj(state.selectedIds[0]);
     const handle = handleEl.dataset.handle;
     if(handle === 'rotate'){
-      const centerLocal = rotPoint(o.w/2,o.h/2,o.rotation);
-      const cx = o.x + centerLocal.x, cy = o.y + centerLocal.y;
+      const cx = o.x + o.w/2, cy = o.y + o.h/2; // rotation is about the box centre
       const startAngle = Math.atan2(pos.rawY-cy, pos.rawX-cx) * 180/Math.PI;
       drag = {mode:'rotate', obj:o, cx, cy, startAngle, startRotation:o.rotation};
     } else {
@@ -2019,12 +2182,15 @@ function onPointerUp(e){
   renderAll();
 }
 
+/* An object is drawn rotated about the CENTRE of its box (see
+   frameTransformString), so a local point p lands at
+   (x + w/2, y + h/2) + R(p - (w/2, h/2)). */
+function localToWorld(o, px, py){
+  const r = rotPoint(px - o.w/2, py - o.h/2, o.rotation||0);
+  return {x: o.x + o.w/2 + r.x, y: o.y + o.h/2 + r.y};
+}
 function boundingWorldCorners(o){
-  const local = [{x:0,y:0},{x:o.w,y:0},{x:o.w,y:o.h},{x:0,y:o.h}];
-  return local.map(p=>{
-    const r = rotPoint(p.x, p.y, o.rotation||0);
-    return {x:o.x+r.x, y:o.y+r.y};
-  });
+  return [[0,0],[o.w,0],[o.w,o.h],[0,o.h]].map(([px,py])=> localToWorld(o, px, py));
 }
 
 function worldBBox(o){
@@ -2071,17 +2237,27 @@ function doResize(drag, pos, bypass){
   if(h_.includes('w')){ newW = Math.max(1, w - local.x); }
   if(h_.includes('n')){ newH = Math.max(1, h - local.y); }
 
-  let localShiftX = 0, localShiftY = 0;
-  if(h_.includes('w')) localShiftX = w - newW;
-  if(h_.includes('n')) localShiftY = h - newH;
-  const worldShift = rotPoint(localShiftX, localShiftY, original.rotation||0);
-  let newX = x + worldShift.x;
-  let newY = y + worldShift.y;
-
   if(state.snap && !bypass){
     newW = Math.max(1, snapVal(newW));
     newH = Math.max(1, snapVal(newH));
   }
+  newW = Math.max(newW, 0.5); newH = Math.max(newH, 0.5);
+
+  // The "anchor" is the edge/corner on the far side from the dragged handle
+  // (or the middle of the box on an axis the handle doesn't touch). Because
+  // the object turns about its centre, and the centre moves when the size
+  // changes, solve for the new x/y that keeps the anchor exactly where it was
+  // in the world — this is what makes resizing a rotated object feel right.
+  const ax = h_.includes('e') ? 0 : (h_.includes('w') ? w : w/2);
+  const ay = h_.includes('s') ? 0 : (h_.includes('n') ? h : h/2);
+  const ax2 = h_.includes('e') ? 0 : (h_.includes('w') ? newW : newW/2);
+  const ay2 = h_.includes('s') ? 0 : (h_.includes('n') ? newH : newH/2);
+  const rot = original.rotation||0;
+  const rOld = rotPoint(ax - w/2, ay - h/2, rot);
+  const anchorWorld = {x: x + w/2 + rOld.x, y: y + h/2 + rOld.y};
+  const rNew = rotPoint(ax2 - newW/2, ay2 - newH/2, rot);
+  const newX = anchorWorld.x - newW/2 - rNew.x;
+  const newY = anchorWorld.y - newH/2 - rNew.y;
 
   o.x = round2(newX); o.y = round2(newY);
   o.w = round2(Math.max(newW,0.5)); o.h = round2(Math.max(newH,0.5));
@@ -2242,6 +2418,9 @@ function onKeyDown(e){
   const key = e.key.toLowerCase();
   if((e.ctrlKey||e.metaKey) && key==='z' && !e.shiftKey){ e.preventDefault(); undo(); return; }
   if((e.ctrlKey||e.metaKey) && (key==='y' || (key==='z'&&e.shiftKey))){ e.preventDefault(); redo(); return; }
+  if((e.ctrlKey||e.metaKey) && key==='c'){ e.preventDefault(); copySelection(); return; }
+  if((e.ctrlKey||e.metaKey) && key==='x'){ e.preventDefault(); cutSelection(); return; }
+  if((e.ctrlKey||e.metaKey) && key==='v'){ e.preventDefault(); pasteClipboard(); return; }
   if((e.ctrlKey||e.metaKey) && key==='d'){ e.preventDefault(); duplicateSelection(); return; }
   if((e.ctrlKey||e.metaKey) && key==='g' && e.shiftKey){ e.preventDefault(); ungroupSelection(); return; }
   if((e.ctrlKey||e.metaKey) && key==='g'){ e.preventDefault(); groupSelection(); return; }
